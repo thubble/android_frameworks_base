@@ -112,6 +112,7 @@ open class QSTileViewImpl @JvmOverloads constructor(
     private lateinit var label: TextView
     protected lateinit var secondaryLabel: TextView
     private lateinit var labelContainer: IgnorableChildLinearLayout
+    private lateinit var horizontalLinearLayout: LinearLayout
     protected lateinit var sideView: ViewGroup
     private lateinit var customDrawableView: ImageView
     private lateinit var chevronView: ImageView
@@ -159,8 +160,8 @@ open class QSTileViewImpl @JvmOverloads constructor(
                     "Theme.SystemUI.QuickSettings")
         }
         setId(generateViewId())
-        orientation = LinearLayout.HORIZONTAL
-        gravity = Gravity.CENTER_VERTICAL or Gravity.START
+        orientation = LinearLayout.VERTICAL
+        gravity = Gravity.CENTER
         importantForAccessibility = IMPORTANT_FOR_ACCESSIBILITY_YES
         clipChildren = false
         clipToPadding = false
@@ -169,8 +170,7 @@ open class QSTileViewImpl @JvmOverloads constructor(
         setColor(getBackgroundColorForState(QSTile.State.DEFAULT_STATE))
 
         val padding = resources.getDimensionPixelSize(R.dimen.qs_tile_padding)
-        val startPadding = resources.getDimensionPixelSize(R.dimen.qs_tile_start_padding)
-        setPaddingRelative(startPadding, padding, padding, padding)
+        setPadding(padding, padding, padding, padding)
 
         val iconSize = resources.getDimensionPixelSize(R.dimen.qs_icon_size)
         addView(_icon, LayoutParams(iconSize, iconSize))
@@ -210,8 +210,7 @@ open class QSTileViewImpl @JvmOverloads constructor(
         }
 
         val padding = resources.getDimensionPixelSize(R.dimen.qs_tile_padding)
-        val startPadding = resources.getDimensionPixelSize(R.dimen.qs_tile_start_padding)
-        setPaddingRelative(startPadding, padding, padding, padding)
+        setPadding(padding, padding, padding, padding)
 
         val labelMargin = resources.getDimensionPixelSize(R.dimen.qs_label_container_margin)
         (labelContainer.layoutParams as MarginLayoutParams).apply {
@@ -249,7 +248,12 @@ open class QSTileViewImpl @JvmOverloads constructor(
         }
         setLabelColor(getLabelColorForState(QSTile.State.DEFAULT_STATE))
         setSecondaryLabelColor(getSecondaryLabelColorForState(QSTile.State.DEFAULT_STATE))
-        addView(labelContainer)
+
+        horizontalLinearLayout = LinearLayout(context)
+        horizontalLinearLayout.layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+        horizontalLinearLayout.addView(labelContainer)
+
+        addView(horizontalLinearLayout)
     }
 
     private fun createAndAddSideView() {
@@ -258,7 +262,10 @@ open class QSTileViewImpl @JvmOverloads constructor(
         customDrawableView = sideView.requireViewById(R.id.customDrawable)
         chevronView = sideView.requireViewById(R.id.chevron)
         setChevronColor(getChevronColorForState(QSTile.State.DEFAULT_STATE))
-        addView(sideView)
+
+        // TODO: sideView is no longer shown, but is still used in other classes.
+        //       Can it be removed??
+        //addView(sideView)
     }
 
     fun createTileBackground(): Drawable {
