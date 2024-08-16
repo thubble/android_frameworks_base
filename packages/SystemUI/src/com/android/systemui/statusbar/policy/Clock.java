@@ -60,6 +60,7 @@ import com.android.systemui.tuner.TunerService.Tunable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
 
@@ -472,13 +473,26 @@ public class Clock extends TextView implements
             }
             mClockFormat = new SimpleDateFormat(format);
         }
-        String result = mClockFormat.format(mCalendar.getTime());
+        String timeResult = mClockFormat.format(mCalendar.getTime());
+        CharSequence dateString = DateFormat.format("E, MMM d ", new Date());
+        String dateResult = dateString.toString();
+        String result = dateResult + " " + timeResult;
+
+        // Hardcode date before time, 70% scaled (from crdroid and PixelXpert)
+        SpannableStringBuilder formatted = new SpannableStringBuilder(result);
+        {
+            int dateStringLen = dateString.length();
+            int timeStringOffset = 0;
+            CharacterStyle style = new RelativeSizeSpan(0.7f);
+            formatted.setSpan(style, timeStringOffset,
+                timeStringOffset + dateStringLen,
+                Spannable.SPAN_EXCLUSIVE_INCLUSIVE);
+        }
 
         if (mAmPmStyle != AM_PM_STYLE_NORMAL) {
             int magic1 = result.indexOf(MAGIC1);
             int magic2 = result.indexOf(MAGIC2);
             if (magic1 >= 0 && magic2 > magic1) {
-                SpannableStringBuilder formatted = new SpannableStringBuilder(result);
                 if (mAmPmStyle == AM_PM_STYLE_GONE) {
                     formatted.delete(magic1, magic2+1);
                 } else {
@@ -494,8 +508,7 @@ public class Clock extends TextView implements
             }
         }
 
-        return result;
-
+        return formatted;
     }
 
     private boolean mDemoMode;
