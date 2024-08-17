@@ -29,7 +29,7 @@
     <bool name="notification_enable_clipping">true</bool>
 
     <!-- Whether to enable transparent background for notification scrims -->
-    <bool name="notification_scrim_transparent">false</bool>
+    <bool name="notification_scrim_transparent">true</bool>
 
     <!-- Control whether to force apps to give up control over the display of system bars at all
      times regardless of System Ui Flags.
