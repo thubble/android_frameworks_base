@@ -80,6 +80,7 @@ public class Clock extends TextView implements
     private static final String VISIBLE_BY_USER = "visible_by_user";
     private static final String SHOW_SECONDS = "show_seconds";
     private static final String VISIBILITY = "visibility";
+    private static final String QSHEADER = "qsheader";
 
     private final UserTracker mUserTracker;
     private final CommandQueue mCommandQueue;
@@ -104,6 +105,7 @@ public class Clock extends TextView implements
     private final int mAmPmStyle;
     private boolean mShowSeconds;
     private Handler mSecondsHandler;
+    private boolean mQsHeader;
 
     // Fields to cache the width so the clock remains at an approximately constant width
     private int mCharsAtCurrentWidth = -1;
@@ -157,6 +159,7 @@ public class Clock extends TextView implements
         bundle.putBoolean(VISIBLE_BY_USER, mClockVisibleByUser);
         bundle.putBoolean(SHOW_SECONDS, mShowSeconds);
         bundle.putInt(VISIBILITY, getVisibility());
+        bundle.putBoolean(QSHEADER, mQsHeader);
 
         return bundle;
     }
@@ -180,6 +183,7 @@ public class Clock extends TextView implements
         if (bundle.containsKey(VISIBILITY)) {
             super.setVisibility(bundle.getInt(VISIBILITY));
         }
+        mQsHeader = bundle.getBoolean(QSHEADER, false);
     }
 
     @Override
@@ -278,6 +282,10 @@ public class Clock extends TextView implements
         }
 
         super.setVisibility(visibility);
+    }
+
+    public void setQsHeader() {
+        mQsHeader = true;
     }
 
     public void setClockVisibleByUser(boolean visible) {
@@ -473,16 +481,28 @@ public class Clock extends TextView implements
             }
             mClockFormat = new SimpleDateFormat(format);
         }
-        String timeResult = mClockFormat.format(mCalendar.getTime());
-        CharSequence dateString = DateFormat.format("E, MMM d ", new Date());
-        String dateResult = dateString.toString();
-        String result = dateResult + " " + timeResult;
+
+        CharSequence dateString = null;
+
+        String result = "";
+        final String timeResult = mClockFormat.format(mCalendar.getTime());
+        String dateResult = "";
+
+        if (!mQsHeader) {
+            dateString = DateFormat.format("E, MMM d ", new Date());
+            dateResult = dateString.toString();
+            result = dateResult + " " + timeResult;
+        } else {
+            // Do not show date in the QS header clock, it's in a separate view there.
+            result = timeResult;
+        }
+
+        SpannableStringBuilder formatted = new SpannableStringBuilder(result);
 
         // Hardcode date before time, 70% scaled (from crdroid and PixelXpert)
-        SpannableStringBuilder formatted = new SpannableStringBuilder(result);
-        {
-            int dateStringLen = dateString.length();
-            int timeStringOffset = 0;
+        if (dateString != null) {
+            final int dateStringLen = dateString.length();
+            final int timeStringOffset = 0;
             CharacterStyle style = new RelativeSizeSpan(0.7f);
             formatted.setSpan(style, timeStringOffset,
                 timeStringOffset + dateStringLen,
